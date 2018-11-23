@@ -22,7 +22,7 @@ class HX711:
 
         self.OFFSET = 1
         self.OFFSET_B = 1
-        self.lastVal = long(0)
+        self.lastVal = numpy.long(0)
 
         self.isNegative = False
         self.MSBindex24Bit = 2
