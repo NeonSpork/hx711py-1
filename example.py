@@ -1,12 +1,25 @@
-import RPi.GPIO as GPIO
+#! /usr/bin/python2
+
 import time
 import sys
-from hx711 import HX711
+
+EMULATE_HX711=False
+
+referenceUnit = 1
+
+if not EMULATE_HX711:
+    import RPi.GPIO as GPIO
+    from hx711 import HX711
+else:
+    from emulated_hx711 import HX711
 
 def cleanAndExit():
-    print "Cleaning..."
-    GPIO.cleanup()
-    print "Bye!"
+    print("Cleaning...")
+
+    if not EMULATE_HX711:
+        GPIO.cleanup()
+        
+    print("Bye!")
     sys.exit()
 
 hx = HX711(5, 6)
@@ -26,10 +39,13 @@ hx.set_reading_format("MSB", "MSB")
 # and I got numbers around 184000 when I added 2kg. So, according to the rule of thirds:
 # If 2000 grams is 184000 then 1000 grams is 184000 / 2000 = 92.
 #hx.set_reference_unit(113)
-hx.set_reference_unit(1)
+hx.set_reference_unit(referenceUnit)
 
 hx.reset()
-#hx.tare()
+
+hx.tare()
+
+print("Tare done! Add weight now...")
 
 # to use both channels, you'll need to tare them both
 #hx.tare_A()
@@ -39,15 +55,15 @@ while True:
     try:
         # These three lines are usefull to debug wether to use MSB or LSB in the reading formats
         # for the first parameter of "hx.set_reading_format("LSB", "MSB")".
-        # Comment the two lines "val = hx.get_weight(5)" and "print val" and uncomment the three lines to see what it prints.
-        #np_arr8_string = hx.get_np_arr8_string()
-        #binary_string = hx.get_binary_string()
-        #print binary_string + " " + np_arr8_string
+        # Comment the two lines "val = hx.get_weight(5)" and "print val" and uncomment these three lines to see what it prints.
+        
+        # np_arr8_string = hx.get_np_arr8_string()
+        # binary_string = hx.get_binary_string()
+        # print binary_string + " " + np_arr8_string
         
         # Prints the weight. Comment if you're debbuging the MSB and LSB issue.
-        # val = hx.get_weight(5)
-	val = hx.read_long()
-        print val
+        val = hx.get_weight(5)
+        print(val)
 
         # To get weight from both channels (if you have load cells hooked up 
         # to both channel A and B), do something like this
@@ -58,5 +74,6 @@ while True:
         hx.power_down()
         hx.power_up()
         time.sleep(0.1)
+
     except (KeyboardInterrupt, SystemExit):
         cleanAndExit()
